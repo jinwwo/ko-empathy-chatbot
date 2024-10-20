@@ -40,7 +40,7 @@ class ChatbotEngine:
         self.tokenizer = tokenizer
 
     def _get_prompt(self, messages: List[Dict[str, str]]) -> str:
-        system_prompt = "당신은 연애 상담 전문가입니다. 여자의 말에 조언을 하며 대화하세요."
+        system_prompt = "남자와 여자의 대화에서 여자의 말에 공감하면서 대화하세요."
         instruction = system_prompt + '\n\n'
         contexts = "여자: " + messages[0]["content"] + "\n"
 
@@ -90,7 +90,6 @@ class ChatbotEngine:
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         return response[response.rfind("남자:") + 3:].strip()
-
 
 
 def parse_arguments():
