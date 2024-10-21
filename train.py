@@ -37,7 +37,11 @@ def prepare_model_for_training(model, lora_config):
 
 def train():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_path", type=str, required=True)
+
+    parser.add_argument("--model_save_path", type=str, required=True)
+    parser.add_argument("--checkpoint", type=str, required=False)
+    parser.add_argument("--cache_dir", type=str, required=False)
+    parser.add_argument("--json_path", type=str, required=True)
     parser.add_argument("--checkpoint", type=str, required=False)
 
     args = parser.parse_args()
@@ -45,12 +49,13 @@ def train():
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)
 
-    model, tokenizer = load_model(cache_dir='/home/jinuman/chat/models')
+    model, tokenizer = load_model(cache_dir=args.cache_dir)
     model = prepare_model_for_training(model, lora_config=get_lora_config())
     print_trainable_parameters(model)
 
-    with open("/home/jinuman/chat/ko-couple-chat.json", 'r') as file:
+    with open(args.json_path, 'r') as file:
         data = json.load(file)
+
     train_dataset = Dataset.from_dict(data)
     dataset = DatasetDict({
         'train': train_dataset
@@ -66,12 +71,11 @@ def train():
         model=model,
         args=training_args,
         train_dataset=dataset['train'],
-        # eval_dataset=dataset['validation']
         data_collator=data_collator
     )
 
-    trainer.train(resume_from_checkpoint="/home/jinuman/chat/outputs/checkpoint-6000")
-    model.save_pretrained(args.model_path)
+    trainer.train(resume_from_checkpoint=args.checkpoint)
+    model.save_pretrained(args.model_save_path)
 
 
 if __name__ == "__main__":
